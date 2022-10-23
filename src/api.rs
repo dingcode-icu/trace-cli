@@ -37,7 +37,6 @@ pub mod api {
         Url::parse(h)?.join(path)
     }
 
-    // pub fn get_buglist(fmtstr:String) -> Option<Resp<Vec<String>>>{
     pub fn get_buglist(fmtstr:String) -> Result<Resp<Vec<String>>, ureq::Error>{
         let url = url_parse("/api/trace/buglist");
         

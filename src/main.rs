@@ -10,7 +10,8 @@ mod subcmd;
 
 
 fn main() {
-    let mts = Command::new("trace-cli")
+    let mut cmd = Command::new("trace-cli");
+    let mts = cmd.clone()
         .version("0.1.0")
         .author("dwb <dwb@dwb.ren>")
         .about("command for trace")
@@ -23,12 +24,6 @@ fn main() {
     
     match mts.subcommand() {
         Some(("board", sub_matchs)) => board::run(sub_matchs),
-        _ => unreachable!("Exhausted list of subcommands and subcommand_required prevents `None`"),
+        _ => {cmd.print_help().unwrap();},
     }
-
-
-    println!("Hello, world!");
-    let ret = get_buglist("*".to_string());
-    println!("ret is 1{}", ret.is_ok());
-    println!("ret is2 {:?}", ret.unwrap());
-}
+}   
