@@ -1,50 +1,66 @@
+
 pub mod api {
 
-    use std::sync::Mutex;
+    use std::{sync::Mutex, time::Duration};
 
     use log::error;
-    use reqwest::{Url, blocking::Response};
     use lazy_static::lazy_static;
-    use serde::{Serialize, Deserialize};
+    use ureq::{Agent, serde::Deserialize};
+    
+    use url::Url;
 
 
-    #[derive(Serialize, Deserialize )] 
+    #[derive(Debug, Deserialize)]
     pub struct Resp<T>{
-        code: u16, 
-        msg: String, 
-        data: Option<T>
+        pub code: u16, 
+        pub msg: String, 
+        pub data: Option<T>
     }
 
     struct ReqConfig{
         pub host: String,
-        con_timeout: u16,
-        req_timeout: u16,
     }
 
     lazy_static! {
+        static ref http_agent: Agent = ureq::AgentBuilder::new()
+        .timeout_connect(Duration::from_secs(5))
+        .timeout_read(Duration::from_secs(5))
+        .build();
+        
         static ref BASEINFO: Mutex<ReqConfig> = Mutex::new(ReqConfig {
-            host: String::from("http://trace.bbclient.icu"),
-            con_timeout: 30,
-            req_timeout: 30
+            host: String::from("https://tracer.bbclient.icu "),
         });
     }
 
+    fn url_parse(path: &str) -> Result<Url, url::ParseError>{
+        let h = &BASEINFO.lock().unwrap().host;      
+        Url::parse(h)?.join(path)
+    }
+
     // pub fn get_buglist(fmtstr:String) -> Option<Resp<Vec<String>>>{
-    pub fn get_buglist(fmtstr:String) -> Option<Response>{
-        let host = &BASEINFO.lock().unwrap().host;
-        let url = Url::parse(host).and_then(|p|p.join("api/buglist"));
+    pub fn get_buglist(fmtstr:String) -> Result<Resp<Vec<String>>, ureq::Error>{
+        let url = url_parse("/api/trace/buglist");
+        
         if let Err(r) = url {
             error!("[http get_butlist]parse url raise error!");
-            return None;
+            let err = ureq::Error::from(r);
+            return Err(err);
         }
-
-        let ret =reqwest::blocking::get("api/buglist");
-
-        if let Ok(resp) = ret {
-            let rere:Resp<Vec<String>> = resp.json().unwrap();
-            return Some(resp.json());
-            // Some()    
-        }       
-        None
+        let ret:Resp<Vec<String>> = ureq::get(url.unwrap().as_str())
+        .query("trace_key", &fmtstr)
+        .set("Content-Type", "application/json;")
+        .call()?
+        .into_json()?;
+        
+        Ok(ret)
     }
+}
+
+
+#[test]
+fn test_api(){
+    use self::api::get_buglist;
+    use log::info;
+    let ret = get_buglist("*".to_string());
+    info!("ret is {:?}", ret);
 }
