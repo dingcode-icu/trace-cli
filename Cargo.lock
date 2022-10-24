@@ -524,6 +524,7 @@ dependencies = [
  "prettytable-rs",
  "regex",
  "serde",
+ "serde_json",
  "ureq",
  "url",
 ]
