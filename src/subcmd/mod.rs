@@ -55,7 +55,7 @@ enum UnityTraceType {
 fn ccs_bug_filter(trace: &str) -> Result<CCSTraceType, Box<dyn Error>> {
     let rex_engine = Regex::new(r"(cocos2d-jsb.js:)")?;
     let rex_inner_js = Regex::new(r"(@assets)")?;
-    let rex_bundle_js = Regex::new(r"(/files/downLoaderTest/)")?;
+    let rex_bundle_js = Regex::new(r"(/downLoaderTest/bundle_)")?;
 
     if rex_engine.is_match(trace) {
         return Ok(CCSTraceType::Engine);
