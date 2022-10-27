@@ -1,4 +1,4 @@
-# trace-cli
+# tracer-cli
 :raised_eyebrow:JUST MORE SIMPLE THEN WEB -  trace command line tool to view the traces;
 
 
