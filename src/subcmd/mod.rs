@@ -3,7 +3,7 @@ use std::{collections::HashMap, error::Error, fmt::Display, hash::Hash};
 use log::error;
 use regex::Regex;
 
-use crate::api;
+use crate::api::{self, get_buglist};
 
 pub mod board;
 pub mod bug;
@@ -72,7 +72,7 @@ fn ccs_bug_filter(trace: &str) -> Result<CCSTraceType, Box<dyn Error>> {
 
 ///獲取單品類信息
 pub fn ccv_type_info() -> HashMap<CCSTraceType, Vec<String>> {
-    let buglist = api::api::get_buglist("*".to_string());
+    let buglist = get_buglist("*".to_string());
     let mut ret: HashMap<CCSTraceType, Vec<String>> = HashMap::new();
     ret.insert(CCSTraceType::Engine, Vec::new());
     ret.insert(CCSTraceType::InnerJS, Vec::new());
@@ -122,7 +122,7 @@ pub fn ccv_board_info() -> (Vec<CCSTraceType>, Vec<u32>, Vec<f32>) {
     ];
     let mut typenum_l = vec![0, 0, 0, 0];
     let mut typeper_l = vec![0., 0., 0., 0.];
-    let buglist = api::api::get_buglist("*".to_string());
+    let buglist = get_buglist("*".to_string());
     if let Ok(resp) = buglist {
         if resp.code != 0 {
             panic!("Net error:{:?}", resp.msg);

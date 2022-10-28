@@ -1,8 +1,8 @@
 use clap::ArgMatches;
-use log::{info, warn};
+use log::warn;
 use serde_json::Value;
 
-use crate::api::api::get_buginfo;
+use crate::api::get_buginfo;
 
 pub fn run(args: &ArgMatches) {
     //require
