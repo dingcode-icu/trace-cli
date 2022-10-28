@@ -73,7 +73,7 @@ pub fn get_buginfo(
 ) -> Result<Resp<Vec<String>>, ureq::Error> {
     let url = url_parse("/v1/ccv2");
     if let Err(r) = url {
-        error!("[http get_butlist]parse url raise error!");
+        error!("[http get_buginfo]parse url raise error!");
         let err = ureq::Error::from(r);
         return Err(err);
     }
@@ -91,7 +91,7 @@ pub fn get_buginfo(
 pub fn get_bugstat_list() -> Result<Resp<HashMap<String, String>>, ureq::Error> {
     let url = url_parse("/api/trace/bugstat/list");
     if let Err(r) = url {
-        error!("[http get_butlist]parse url raise error!");
+        error!("[http get_bugstat_list]parse url raise error!");
         let err = ureq::Error::from(r);
         return Err(err);
     }
@@ -103,8 +103,18 @@ pub fn get_bugstat_list() -> Result<Resp<HashMap<String, String>>, ureq::Error> 
 }
 
 ///api:[post]bugstat modify by kv
-pub fn post_modify_bugstat(trace_key: String, stat:String) -> {
-
+pub fn post_modify_bugstat(trace_key: String, stat:String) -> Result<RespSuc, ureq::Error>{
+    let url = url_parse("/api/trace/bugstat/modify");
+    if let Err(r) = url {
+        error!("[http post_modify_bugstat]parse url raise error!");
+        let err = ureq::Error::from(r);
+        return Err(err);
+    }
+    let ret: RespSuc = ureq::get(url.unwrap().as_str())
+        .set("Content-Type", "application/json;")
+        .call()?
+        .into_json()?;
+    Ok(ret)
 }
 
 #[test]
