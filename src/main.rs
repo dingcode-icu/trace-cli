@@ -1,4 +1,3 @@
-use log::info;
 use subcmd::bug;
 
 use crate::subcmd::board;
@@ -7,7 +6,6 @@ use clap::{self, arg, Arg, Command};
 
 mod api;
 mod subcmd;
-mod auth;
 
 fn main() {
     let mut cmd = Command::new("trace-cli");
@@ -29,7 +27,6 @@ fn main() {
                 .args([Arg::new("trace")
                     .required(true)
                     .help("the trace key to show single bug details")]),
-                    
         )
         .subcommand(
             Command::new("fix")
@@ -37,7 +34,14 @@ fn main() {
                 .args([Arg::new("trace")
                     .required(true)
                     .help("the trace key to show single bug details")]),
-                    
+        )
+        .subcommand(
+            Command::new("login")
+                .about("login by oauth2 api, default is github")
+                .args([Arg::new("email")
+                    // .required(true)
+                    .help("email")
+                    .help("the email of sdf")]),
         )
         .get_matches();
 
