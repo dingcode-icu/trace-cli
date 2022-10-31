@@ -1,4 +1,4 @@
-use subcmd::bug;
+use subcmd::{bug, fix, login};
 
 use crate::subcmd::board;
 
@@ -35,19 +35,14 @@ fn main() {
                     .required(true)
                     .help("the trace key to show single bug details")]),
         )
-        .subcommand(
-            Command::new("login")
-                .about("login by oauth2 api, default is github")
-                .args([Arg::new("email")
-                    // .required(true)
-                    .help("email")
-                    .help("the email of sdf")]),
-        )
+        .subcommand(Command::new("login").about("login by oauth2 api, default *API* IS GITHUB"))
         .get_matches();
 
     match mts.subcommand() {
         Some(("board", sub_matchs)) => board::run(sub_matchs),
         Some(("bug", sub_matchs)) => bug::run(sub_matchs),
+        Some(("login", sub_matchs)) => login::run(sub_matchs),
+        Some(("fix", sub_matchs)) => fix::run(sub_matchs),
         _ => {
             cmd.print_help().unwrap();
         }

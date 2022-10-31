@@ -1,6 +1,7 @@
-use super::{ccv_board_info, ccv_type_info, CCSTraceType};
 use clap::ArgMatches;
 use prettytable::{row, Table};
+
+use super::engine::ccv::{ccv_board_info, ccv_type_info, CCSTraceType};
 
 fn tabel_for_boardtype(trace_type: CCSTraceType) {
     let mut tb = Table::new();
