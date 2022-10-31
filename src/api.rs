@@ -103,7 +103,7 @@ pub fn get_bugstat_list() -> Result<Resp<HashMap<String, String>>, ureq::Error> 
 }
 
 ///api:[post]bugstat modify by kv
-pub fn post_modify_bugstat(trace_key: String, stat:String) -> Result<RespSuc, ureq::Error>{
+pub fn post_modify_bugstat(trace_key: String, stat: String) -> Result<RespSuc, ureq::Error> {
     let url = url_parse("/api/trace/bugstat/modify");
     if let Err(r) = url {
         error!("[http post_modify_bugstat]parse url raise error!");

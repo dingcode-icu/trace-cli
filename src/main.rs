@@ -8,32 +8,32 @@ mod api;
 mod subcmd;
 
 fn main() {
-    let mut cmd = Command::new("trace-cli");
+    let mut cmd = Command::new("tracer-cli");
     let mts = cmd
         .clone()
         .version("0.1.0")
         .author("dwb <dwb@dwb.ren>")
-        .about("command for trace")
+        .about("command for tracer")
         .subcommand(
             Command::new("board")
-                .about("show trace overview info")
-                .args([Arg::new("trace_type")
+                .about("show tracer overview info")
+                .args([Arg::new("tracer_type")
                     .short('t')
-                    .help("the trace type to show single type details")]),
+                    .help("the tracer type to show single type details")]),
         )
         .subcommand(
             Command::new("bug")
                 .about("show the fliterd detail of bug by input")
-                .args([Arg::new("trace")
+                .args([Arg::new("tracer")
                     .required(true)
-                    .help("the trace key to show single bug details")]),
+                    .help("the tracer key to show single bug details")]),
         )
         .subcommand(
             Command::new("fix")
-                .about("show the trace stat record")
-                .args([Arg::new("trace")
+                .about("show the tracer stat record")
+                .args([Arg::new("tracer")
                     .required(true)
-                    .help("the trace key to show single bug details")]),
+                    .help("the tracer key to show single bug details")]),
         )
         .subcommand(Command::new("login").about("login by oauth2 api, default *API* IS GITHUB"))
         .get_matches();
