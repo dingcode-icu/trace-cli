@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::APIProcesser;
 use ureq::{serde_json, Agent};
 use url::Url;
@@ -87,7 +89,10 @@ impl GithubProcesser {
     }
 
     pub fn get_httpagent() -> Agent {
-        let ag = ureq::AgentBuilder::new().build();
+        let ag = ureq::AgentBuilder::new()
+        .timeout_connect(Duration::from_secs(5))
+        .timeout_read(Duration::from_secs(5))
+        .proxy(ureq::Proxy::new("http://127.0.0.1:7890").unwrap()).build();
         ag
     }
 }

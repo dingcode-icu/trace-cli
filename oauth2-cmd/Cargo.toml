@@ -16,3 +16,7 @@ opener = "0.5.0"
 [[example]]
 name ="core"
 path = "example/base.rs"
+
+
+[profile.release]
+panic = 'abort'

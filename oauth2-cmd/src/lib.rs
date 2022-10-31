@@ -3,8 +3,7 @@ use std::{
     fs, io,
     path::{Path, PathBuf},
     str::FromStr,
-    thread,
-    time::Duration,
+    thread, fmt::Display
 };
 
 use github::GithubProcesser;
@@ -21,6 +20,20 @@ mod github;
 pub enum API {
     Github,
     Dingcode,
+}
+
+pub enum CacheType {
+    Token, 
+    Usr
+}
+
+impl Display for CacheType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CacheType::Token=> write!(f, "token"),
+            CacheType::Usr => write!(f, "usr"),
+        }
+    }
 }
 
 ///查看可用的port
@@ -52,12 +65,24 @@ fn chk_loc_token() -> String {
 fn chk_loc_usrinfo() -> serde_json::Value {
     let cache_dir = get_global_cachedir();
     let f_usr = Path::new(&cache_dir).join(".usr");
-    let f_usr_str = fs::read_to_string(f_usr).unwrap_or_default();
+    let f_usr_str = fs::read_to_string(f_usr).unwrap_or("{}".to_string());
     serde_json::Value::from_str(&f_usr_str).unwrap()
 }
 
+///缓存到cache文件夹
+fn record_loc_cache(ctype: CacheType, cont:String) -> Result<(), io::Error> {
+    let cache_dir = get_global_cachedir();
+    let f = match ctype{
+        CacheType::Token => Path::new(&cache_dir).join(".token"),
+        CacheType::Usr => Path::new(&cache_dir).join(".usr"),
+    };
+
+    fs::write(f, &cont)?;
+    Ok(())
+}
+
 ///获取query kv对
-fn query_to_tuple(query_str: String) -> HashMap<String, String> {
+fn query_to_tuple(query_str: &str) -> HashMap<String, String> {
     let query_l: Vec<&str> = query_str.split("&").collect();
     let mut ret: HashMap<String, String> = HashMap::new();
     for ql in query_l {
@@ -67,40 +92,31 @@ fn query_to_tuple(query_str: String) -> HashMap<String, String> {
     return ret;
 }
 
-fn svr_for_redirect<F>(port: u16, cb: F) -> String
+
+
+fn svr_for_redirect<F>(port: u16, cb: F) -> Option<Value>
 where
-    F: Fn(&str),
+    F: Fn(&str) -> Value,
 {
     let addr = format!("127.0.0.1:{}", port);
     let svr = Server::http(&addr).unwrap();
+    let mut ret: Option<Value> = None;
     for req in svr.incoming_requests() {
-        let query_hash = query_to_tuple(req.url()[2..].to_string());
+        let query_hash = query_to_tuple(&req.url()[2..]);
         if query_hash.contains_key("code") {
-            cb(query_hash.get("code").unwrap());
+            let r = cb(query_hash.get("code").unwrap());
             svr.unblock();
+            ret = Some(r)
         } else {
             panic!("[getcode]raise error!")
         }
     }
-    String::from(&addr)
+    ret
 }
 
-pub(crate) trait APIProcesser {
-    fn agent() -> ureq::Agent {
-        let ag = ureq::AgentBuilder::new()
-            .timeout_connect(Duration::from_secs(5))
-            .timeout_read(Duration::from_secs(5))
-            .proxy(ureq::Proxy::new("http://l27.0.0.1:7890").unwrap())
-            .build();
-        ag
-    }
 
-    fn record_loc_token(&self, token: String) -> Result<String, io::Error> {
-        let cache_dir = get_global_cachedir();
-        let f_token = Path::new(&cache_dir).join(".token");
-        fs::write(f_token, &token)?;
-        Ok(token)
-    }
+
+pub(crate) trait APIProcesser {
 
     fn webbrowser_login(&self, red_uri: String);
 
@@ -109,10 +125,6 @@ pub(crate) trait APIProcesser {
     fn api_gettoken(&self, code: String, red_uri: String) -> Result<String, ureq::Error>;
 
     fn api_userinfo(&self, token: String) -> Result<serde_json::Value, ureq::Error>;
-
-    fn clear(&self) {
-        println!("clear tokne in local!")
-    }
 }
 
 pub fn login(api: Option<API>) -> Result<serde_json::Value, serde_json::Error> {
@@ -133,7 +145,7 @@ pub fn login(api: Option<API>) -> Result<serde_json::Value, serde_json::Error> {
                 .api_gettoken(code.to_string(), red_uri.clone())
                 .unwrap();
             println!("output token is {}", token);
-            let query_kv = query_to_tuple(token);
+            let query_kv = query_to_tuple(&token);
             println!("output query_kv is{:?}", query_kv);
             let usr = procer
                 .api_userinfo(format!(
@@ -142,9 +154,14 @@ pub fn login(api: Option<API>) -> Result<serde_json::Value, serde_json::Error> {
                     query_kv.get("access_token").unwrap()
                 ))
                 .unwrap();
-            println!("usrinfo  is{:?}", usr);
+            println!("usrinfo is{:?}", usr);
+            //record token 
+            let rr = record_loc_cache(CacheType::Token, token.to_string());
+            //record usr
+            let rr = record_loc_cache(CacheType::Usr, usr.to_string());
+            usr
         });
-        serde_json::Value::from_str(ret.as_str())
+        ret
     });
 
     //get token by loc/remote
@@ -152,10 +169,12 @@ pub fn login(api: Option<API>) -> Result<serde_json::Value, serde_json::Error> {
     if token.is_empty() {
         procer.webbrowser_login(format!("http://127.0.0.1:{}", port.to_string()));
         let ret = svr.join().unwrap();
-        return ret;
+        if ret.is_none(){
+            panic!("[error]svr get req github api failed!");
+        }
     }
     let usr = chk_loc_usrinfo();
-    Result::Ok(usr)
+    Ok(usr)
 }
 
 pub fn logout() {
