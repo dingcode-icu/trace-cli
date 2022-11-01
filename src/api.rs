@@ -33,7 +33,7 @@ struct ReqConfig {
 }
 
 lazy_static! {
-    static ref http_agent: Agent = ureq::AgentBuilder::new()
+    static ref HTTP_AGENT: Agent = ureq::AgentBuilder::new()
         .timeout_connect(Duration::from_secs(5))
         .timeout_read(Duration::from_secs(5))
         .build();

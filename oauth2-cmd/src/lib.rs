@@ -48,7 +48,7 @@ fn get_avaliable_port() -> u16 {
 
 ///获取缓存token
 fn get_global_cachedir() -> PathBuf {
-    let ret = std::env::home_dir().unwrap().join(".oauth2-cmd");
+    let ret = dirs::config_dir().unwrap().join(".oauth2-cmd");
     if !Path::new(&ret).is_dir() {
         let _ = std::fs::create_dir_all(&ret);
     }
@@ -163,9 +163,9 @@ pub fn login(api: Option<API>) -> Result<serde_json::Value, serde_json::Error> {
                 .unwrap();
             println!("usrinfo is{:?}", usr);
             //record token
-            let rr = record_loc_cache(CacheType::Token, token.to_string());
+            let _ = record_loc_cache(CacheType::Token, token.to_string());
             //record usr
-            let rr = record_loc_cache(CacheType::Usr, usr.to_string());
+            let _ = record_loc_cache(CacheType::Usr, usr.to_string());
             usr
         });
         ret
@@ -198,11 +198,7 @@ pub fn is_login() -> bool {
 
 #[test]
 fn test_getenv() {
-    use std::env::home_dir;
-    println!("home dir is {}", home_dir().unwrap().display());
-
     println!("available port is {}", get_avaliable_port());
-
     let html_str = login(Some(API::Github));
     println!("ret is {:?}", html_str);
 }

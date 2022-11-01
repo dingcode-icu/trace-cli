@@ -1,9 +1,6 @@
-use subcmd::{bug, fix, login};
-
 use crate::subcmd::board;
-
-use clap::{self, arg, Arg, Command};
-
+use clap::{self, Arg, Command};
+use subcmd::{bug, fix, login};
 mod api;
 mod subcmd;
 
