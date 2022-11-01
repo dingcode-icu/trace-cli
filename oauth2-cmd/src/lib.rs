@@ -1,9 +1,10 @@
 use std::{
     collections::HashMap,
+    fmt::Display,
     fs, io,
     path::{Path, PathBuf},
     str::FromStr,
-    thread, fmt::Display
+    thread,
 };
 
 use github::GithubProcesser;
@@ -23,14 +24,14 @@ pub enum API {
 }
 
 pub enum CacheType {
-    Token, 
-    Usr
+    Token,
+    Usr,
 }
 
 impl Display for CacheType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            CacheType::Token=> write!(f, "token"),
+            CacheType::Token => write!(f, "token"),
             CacheType::Usr => write!(f, "usr"),
         }
     }
@@ -70,9 +71,9 @@ fn chk_loc_usrinfo() -> serde_json::Value {
 }
 
 ///缓存到cache文件夹
-fn record_loc_cache(ctype: CacheType, cont:String) -> Result<(), io::Error> {
+fn record_loc_cache(ctype: CacheType, cont: String) -> Result<(), io::Error> {
     let cache_dir = get_global_cachedir();
-    let f = match ctype{
+    let f = match ctype {
         CacheType::Token => Path::new(&cache_dir).join(".token"),
         CacheType::Usr => Path::new(&cache_dir).join(".usr"),
     };
@@ -91,8 +92,6 @@ fn query_to_tuple(query_str: &str) -> HashMap<String, String> {
     }
     return ret;
 }
-
-
 
 fn svr_for_redirect<F>(port: u16, cb: F) -> Option<Value>
 where
@@ -114,9 +113,11 @@ where
     ret
 }
 
-
-
 pub(crate) trait APIProcesser {
+    fn get_usr_info() -> Option<serde_json::Value> {
+        let usr = chk_loc_usrinfo();
+        Some(usr)
+    }
 
     fn webbrowser_login(&self, red_uri: String);
 
@@ -127,9 +128,15 @@ pub(crate) trait APIProcesser {
     fn api_userinfo(&self, token: String) -> Result<serde_json::Value, ureq::Error>;
 }
 
-pub fn login(api: Option<API>) -> Result<serde_json::Value, serde_json::Error> {
-    let api_type = api.unwrap_or(API::Github);
+pub fn get_usr_json() -> serde_json::Value {
+    chk_loc_usrinfo()
+}
 
+pub fn login(api: Option<API>) -> Result<serde_json::Value, serde_json::Error> {
+    if is_login() {
+        logout()
+    };
+    let api_type = api.unwrap_or(API::Github);
     let procer = match api_type {
         API::Github => GithubProcesser::default(),
         _ => GithubProcesser::default(),
@@ -155,7 +162,7 @@ pub fn login(api: Option<API>) -> Result<serde_json::Value, serde_json::Error> {
                 ))
                 .unwrap();
             println!("usrinfo is{:?}", usr);
-            //record token 
+            //record token
             let rr = record_loc_cache(CacheType::Token, token.to_string());
             //record usr
             let rr = record_loc_cache(CacheType::Usr, usr.to_string());
@@ -169,7 +176,7 @@ pub fn login(api: Option<API>) -> Result<serde_json::Value, serde_json::Error> {
     if token.is_empty() {
         procer.webbrowser_login(format!("http://127.0.0.1:{}", port.to_string()));
         let ret = svr.join().unwrap();
-        if ret.is_none(){
+        if ret.is_none() {
             panic!("[error]svr get req github api failed!");
         }
     }
@@ -183,6 +190,10 @@ pub fn logout() {
         let _ = fs::remove_dir(cache_dir);
     }
     println!("Done!");
+}
+
+pub fn is_login() -> bool {
+    chk_loc_token().len() > 0
 }
 
 #[test]

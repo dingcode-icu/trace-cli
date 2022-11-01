@@ -110,9 +110,12 @@ pub fn post_modify_bugstat(trace_key: String, stat: String) -> Result<RespSuc, u
         let err = ureq::Error::from(r);
         return Err(err);
     }
-    let ret: RespSuc = ureq::get(url.unwrap().as_str())
-        .set("Content-Type", "application/json;")
-        .call()?
+    let ret: RespSuc = ureq::post(url.unwrap().as_str())
+        .send_json(ureq::json!({
+            "list_stat":[
+                [trace_key, stat]
+                ]
+        }))?
         .into_json()?;
     Ok(ret)
 }

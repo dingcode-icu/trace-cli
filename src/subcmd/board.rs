@@ -15,34 +15,25 @@ fn tabel_for_boardtype(trace_type: CCSTraceType) {
 }
 
 fn table_for_boardmain() {
-    let (type_l, num_l, per_l) = ccv_board_info();
+    let (type_l, num_l, per_l, fix_l) = ccv_board_info();
     let mut tb = Table::new();
-    tb.add_row(row!["TraceType", "Count", "Per"]);
-    tb.add_row(row![
-        type_l[0],
-        num_l[0].to_string(),
-        format!("{:.4}%", (per_l[0] * 100.).to_string())
-    ]);
-    tb.add_row(row![
-        type_l[1],
-        num_l[1].to_string(),
-        format!("{:.4}%", (per_l[1] * 100.).to_string())
-    ]);
-    tb.add_row(row![
-        type_l[2],
-        num_l[2].to_string(),
-        format!("{:.4}%", (per_l[2] * 100.).to_string())
-    ]);
-    tb.add_row(row![
-        type_l[3],
-        num_l[3].to_string(),
-        format!("{:.4}%", (per_l[3] * 100.).to_string())
-    ]);
+    let title_row = row!["TraceType", "Count", "Per", "Fixed"];
+    tb.add_row(title_row);
+
+    let type_num = CCSTraceType::len();
+    for i in 0..type_num {
+        tb.add_row(row![
+            type_l[i],
+            num_l[i].to_string(),
+            format!("{:.4}%", (per_l[i] * 100.).to_string()),
+            fix_l[i]
+        ]);
+    }
     tb.printstd();
 }
 
 pub fn run(args: &ArgMatches) {
-    let trace_type = args.get_one::<String>("trace_type");
+    let trace_type = args.get_one::<String>("tracer_type");
     if trace_type.is_some() {
         let type_t = CCSTraceType::from(trace_type.unwrap().to_string());
         tabel_for_boardtype(type_t);

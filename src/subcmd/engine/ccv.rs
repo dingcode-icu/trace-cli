@@ -2,15 +2,21 @@ use std::{collections::HashMap, error::Error, fmt::Display};
 
 use regex::Regex;
 
-use crate::api::get_buglist;
+use crate::api::{get_buglist, get_bugstat_list};
 
-#[derive(Debug, Eq, PartialEq, Hash)]
+#[derive(Debug, Eq, PartialEq, Hash, Clone, Copy)]
+#[repr(u8)]
 pub enum CCSTraceType {
-    Unknown,
-    Engine,
-
+    Engine = 0,
     InnerJS,
     BundleJS,
+    Unknown,
+}
+
+impl CCSTraceType {
+    pub fn len() -> usize {
+        4
+    }
 }
 
 impl Display for CCSTraceType {
@@ -54,7 +60,7 @@ fn ccs_bug_filter(trace: &str) -> Result<CCSTraceType, Box<dyn Error>> {
     Ok(CCSTraceType::Unknown)
 }
 
-///獲取單品類信息
+///获取单个类型的错误信息
 pub fn ccv_type_info() -> HashMap<CCSTraceType, Vec<String>> {
     let buglist = get_buglist("*".to_string());
     let mut ret: HashMap<CCSTraceType, Vec<String>> = HashMap::new();
@@ -97,38 +103,69 @@ pub fn ccv_type_info() -> HashMap<CCSTraceType, Vec<String>> {
 }
 
 ///获取错误大盘信息
-pub fn ccv_board_info() -> (Vec<CCSTraceType>, Vec<u32>, Vec<f32>) {
-    let mut type_l = vec![
+pub fn ccv_board_info() -> (Vec<CCSTraceType>, Vec<u32>, Vec<f32>, Vec<u32>) {
+    println!("[board]api to list(1/3)...");
+
+    let mut buglist: Vec<String> = Vec::new();
+    if let Ok(resp) = get_buglist("*".to_string()) {
+        if resp.code != 0 {
+            panic!("Net error:{:?}", resp.msg);
+        }
+        buglist = resp.data.unwrap_or_default();
+    };
+    println!("[board]api to stat(2/3)...");
+    let mut statlist: HashMap<String, String> = HashMap::new();
+    if let Ok(resp) = get_bugstat_list() {
+        if resp.code != 0 {
+            panic!("Net error:{:?}", resp.msg);
+        }
+        statlist = resp.data.unwrap_or_default();
+    };
+    println!("[board]done!");
+
+    let type_l = vec![
         CCSTraceType::Engine,
         CCSTraceType::InnerJS,
         CCSTraceType::BundleJS,
         CCSTraceType::Unknown,
     ];
+    //总数列表
     let mut typenum_l = vec![0, 0, 0, 0];
+    //百分比列表
     let mut typeper_l = vec![0., 0., 0., 0.];
-    let buglist = get_buglist("*".to_string());
-    if let Ok(resp) = buglist {
-        if resp.code != 0 {
-            panic!("Net error:{:?}", resp.msg);
+    //修复数量
+    let mut typenumfixed_l = vec![0, 0, 0, 0];
+
+    let mut handle_all_num = |ct: CCSTraceType| {
+        let idx = ct as usize;
+        typenum_l[idx] += 1;
+    };
+
+    let mut handle_allper_num = |ct: CCSTraceType, is_fix: bool| {
+        let idx = ct as usize;
+        if is_fix {
+            typenumfixed_l[idx] += 1;
         }
-        if let Some(bl) = resp.data {
-            for b in &bl {
-                let ret = ccs_bug_filter(b.as_str());
-                if let Ok(r) = ret {
-                    match r {
-                        CCSTraceType::Engine => typenum_l[0] += 1,
-                        CCSTraceType::InnerJS => typenum_l[1] += 1,
-                        CCSTraceType::BundleJS => typenum_l[2] += 1,
-                        CCSTraceType::Unknown => typenum_l[3] += 1,
-                    }
-                }
-            }
-            typeper_l[0] = (typenum_l[0] as f32) / (bl.len() as f32);
-            typeper_l[1] = (typenum_l[1] as f32) / (bl.len() as f32);
-            typeper_l[2] = (typenum_l[2] as f32) / (bl.len() as f32);
-            typeper_l[3] = (typenum_l[3] as f32) / (bl.len() as f32);
+    };
+    for b in &buglist {
+        let ret = ccs_bug_filter(b.as_str());
+        if let Ok(r) = ret {
+            handle_all_num(r);
+            handle_allper_num(r, statlist.contains_key(b))
         }
-        return (type_l, typenum_l, typeper_l);
     }
-    panic!("Get buglist from remote failed!")
+    let bug_len = buglist.len();
+    for i in 0..CCSTraceType::len() {
+        typeper_l[i] = (typenum_l[i] as f32) / (bug_len as f32);
+    }
+
+    return (type_l, typenum_l, typeper_l, typenumfixed_l);
+}
+
+#[test]
+fn test_enum() {
+    println!("enum value is {}", CCSTraceType::Unknown as u16);
+    println!("enum value is {}", CCSTraceType::Engine as u16);
+    println!("enum value is {}", CCSTraceType::InnerJS as u16);
+    println!("enum value is {}", CCSTraceType::BundleJS as u16);
 }
