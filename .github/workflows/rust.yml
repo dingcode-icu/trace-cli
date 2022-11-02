@@ -51,7 +51,7 @@ jobs:
       name: new_release 
       uses: actions/create-release@latest
       env: 
-        GITHUB_TOKEN: ${{secret.TOKEN}}
+        GITHUB_TOKEN: ${{ secrets.TOKEN }}
       with:
         tag_name: ${{steps.read_toml.outputs.value}}
         release_name: ${{steps.read_toml.outputs.value}}  
