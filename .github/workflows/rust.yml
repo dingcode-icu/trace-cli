@@ -41,7 +41,7 @@ jobs:
       uses: actions/download-artifact@v3
       with: 
         name: win_release
-        path: target/x86_64-pc-windows-msvc
+        path: target/x86_64-pc-windows-msvc/tracer-cli.exe
     
     -
       uses: SebRollen/toml-action@v1.0.1
