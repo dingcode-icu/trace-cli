@@ -41,6 +41,17 @@ jobs:
     - 
       id: win_build
       run: cargo build --release --target=x86_64-pc-windows-msvc
+      
+    - 
+      run: |
+        echo ======================
+        echo ${{ needs }} 
+        echo ${{ needs.new_release }} 
+        echo ${{ needs.new_release.steps }} 
+        echo ${{ needs.new_release.steps.new_release}} 
+        echo ${{ needs.new_release.steps.new_release.outputs}}
+        echo ${{ needs.new_release.steps.new_release.outputs.upload_url }} 
+        echo ======================
     - 
       name: upload win assets 
       uses: actions/upload-release-asset@v1
