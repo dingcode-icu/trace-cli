@@ -31,6 +31,7 @@ jobs:
           prerelease: false 
   build_win:
     runs-on: windows-latest
+    needs: new_release
     steps:
     - 
       uses: actions/checkout@v3
