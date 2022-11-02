@@ -47,7 +47,7 @@ jobs:
       name: upload win assets 
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.ACTION_TOKEN }}
       with:
         upload_url: ${{ needs.new_release.outputs.rel_uploadurl }} 
         asset_path: target/x86_64-pc-windows-msvc/release/tracer-cli.exe
@@ -69,7 +69,7 @@ jobs:
       name: upload mac64 assets 
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.ACTION_TOKEN }}
       with:
         upload_url: ${{  needs.new_release.outputs.rel_uploadurl }} #
         asset_path: target/x86_64-apple-darwin/release/tracer-cli
@@ -79,7 +79,7 @@ jobs:
       name: upload mac-arm assets 
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.ACTION_TOKEN }}
       with:
         upload_url: ${{  needs.new_release.outputs.rel_uploadurl }} #
         asset_path: target/aarch64-apple-darwin/release/tracer-cli
