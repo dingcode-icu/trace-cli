@@ -39,19 +39,10 @@ jobs:
     needs: new_release
     steps:
     - 
-      run: |
-        echo ======================
-        echo ${{ needs }} 
-        echo ${{ needs.new_release }} 
-        echo ${{ needs.new_release.outputs }} 
-        echo ${{ needs.new_release.outputs.rel_uploadurl }} 
-        echo ======================
-    - 
       uses: actions/checkout@v3
     - 
       id: win_build
       run: cargo build --release --target=x86_64-pc-windows-msvc
-      
     - 
       name: upload win assets 
       uses: actions/upload-release-asset@v1
@@ -60,6 +51,7 @@ jobs:
       with:
         upload_url: ${{ needs.new_release.outputs.upload_url }} 
         asset_path: target/x86_64-pc-windows-msvc/release/tracer-cli.exe
+        asset_content_type: application/octet-stream
       
   build_mac:
     runs-on: macos-latest
@@ -82,6 +74,7 @@ jobs:
         upload_url: ${{  needs.new_release.outputs.rel_uploadurl }} #
         asset_path: target/x86_64-apple-darwin/release/tracer-cli
         asset_name:  mac_intel64
+        asset_content_type: application/octet-stream
     - 
       name: upload mac-arm assets 
       uses: actions/upload-release-asset@v1
@@ -91,3 +84,4 @@ jobs:
         upload_url: ${{  needs.new_release.outputs.rel_uploadurl }} #
         asset_path: target/aarch64-apple-darwin/release/tracer-cli
         asset_name: mac-arm
+        asset_content_type: application/octet-stream
