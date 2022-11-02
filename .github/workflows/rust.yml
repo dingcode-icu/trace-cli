@@ -1,0 +1,60 @@
+name: Rust
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ "main" ]
+    paths: Cargo.toml
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build_win:
+    runs-on: windows-latest
+    steps:
+    - 
+      uses: actions/checkout@v3
+    - 
+      name: Build
+      run: cargo build --release -target=x86_64-pc-windows-msvc
+    - 
+      uses: actions/upload-artifact@v3
+      with: 
+        name: win_release 
+        path: target/x86_64-pc-windows-msvc
+      
+  build_mac:
+    runs-on: macos-latest
+    steps: 
+    - uses: actions/checkout@v3
+    - 
+      name: Build
+      run: |
+        cargo build --release -target=x86_64-apple-darwin
+        cargo build --release -target=aarch64-apple-darwin
+
+    - 
+      name: download_winbinary
+      uses: actions/download-artifact@v3
+      with: 
+        name: win_release
+        path: target/x86_64-pc-windows-msvc
+    
+    -
+      uses: SebRollen/toml-action@v1.0.1
+      id: read_toml
+      with:
+        file: 'Cargo.toml'
+        field: 'package.version'
+    -
+      name: new_release 
+      uses: actions/create-release@latest
+      env: 
+        GITHUB_TOKEN: ${{secret.TOKEN}}
+      with:
+        tag_name: ${{steps.read_toml.outputs.value}}
+        release_name: ${{steps.read_toml.outputs.value}}  
+        draft: false 
+        prerelease: false 
+  
