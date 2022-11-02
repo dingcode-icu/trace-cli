@@ -43,6 +43,11 @@ jobs:
     - 
       id: win_build
       run: cargo build --release --target=x86_64-pc-windows-msvc
+
+    - 
+      uses: montudor/action-zip@v1
+      with:
+        args: zip -qq -r win_x64.zip target/x86_64-pc-windows-msvc/release/tracer-cli.exe
     - 
       name: upload win assets 
       uses: actions/upload-release-asset@v1
@@ -50,8 +55,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.ACTION_TOKEN }}
       with:
         upload_url: ${{ needs.new_release.outputs.rel_uploadurl }} 
-        asset_path: target/x86_64-pc-windows-msvc/release/tracer-cli.exe
-        asset_content_type: application/octet-stream
+        asset_path: win_x64.zip
+        asset_content_type: application/zip
+        asset_name: win-x64
       
   build_mac:
     runs-on: macos-latest
@@ -66,15 +72,23 @@ jobs:
         rustup target add aarch64-apple-darwin
         cargo build --release --target=aarch64-apple-darwin
     - 
+      uses: montudor/action-zip@v1
+      with:
+        args: zip -qq -r mac-intel64.zip target/x86_64-apple-darwin/release/tracer-cli
+    - 
+      uses: montudor/action-zip@v1
+      with:
+        args: zip -qq -r mac-arm64.zip target/aarch64-apple-darwin/release/tracer-cli
+    - 
       name: upload mac64 assets 
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.ACTION_TOKEN }}
       with:
         upload_url: ${{  needs.new_release.outputs.rel_uploadurl }} #
-        asset_path: target/x86_64-apple-darwin/release/tracer-cli
-        asset_name:  mac_intel64
-        asset_content_type: application/octet-stream
+        asset_path: mac-intel64.zip
+        asset_name:  mac-intel64.zip
+        asset_content_type: application/zip
     - 
       name: upload mac-arm assets 
       uses: actions/upload-release-asset@v1
@@ -82,6 +96,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.ACTION_TOKEN }}
       with:
         upload_url: ${{  needs.new_release.outputs.rel_uploadurl }} #
-        asset_path: target/aarch64-apple-darwin/release/tracer-cli
-        asset_name: mac-arm
-        asset_content_type: application/octet-stream
+        asset_path: mac-arm64.zip
+        asset_name: mac-arm64.zip
+        asset_content_type: application/zip
