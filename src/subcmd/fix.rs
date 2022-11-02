@@ -1,4 +1,4 @@
-use super::get_trace_state;
+use super::{get_trace_state, query_to_tuple};
 use crate::{api::post_modify_bugstat, subcmd::TraceState};
 use clap::ArgMatches;
 use oauth2_cmd::{get_usr_json, is_login};
@@ -35,6 +35,12 @@ pub fn run(args: &ArgMatches) {
             println!("[fix]suc!")
         }
     } else {
+        let ret = query_to_tuple(cur_state.unwrap().as_str());
+        println!(
+            "[fix]the bug had already been fixed by <{email}> in <{time}>",
+            email = ret.get("resolve_email").unwrap_or(&"unknown".to_string()),
+            time = ret.get("resolve_time").unwrap_or(&"unknown".to_string())
+        )
     }
 }
 

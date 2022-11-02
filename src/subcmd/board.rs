@@ -3,15 +3,20 @@ use prettytable::{row, Table};
 
 use super::engine::ccv::{ccv_board_info, ccv_type_info, CCSTraceType};
 
-fn tabel_for_boardtype(trace_type: CCSTraceType) {
+fn table_for_boardtype(trace_type: CCSTraceType, is_showall: bool) {
     let mut tb = Table::new();
     tb.add_row(row!["TraceType", "BugList"]);
-    let ret = ccv_type_info();
+    let ret = ccv_type_info(is_showall);
     let list = ret.get(&trace_type).unwrap();
     for k in list {
         tb.add_row(row![trace_type.to_string(), k]);
     }
     tb.printstd();
+    println!(
+        "[board]Trace in type = <{}> still {} to fix!:3",
+        trace_type.to_string(),
+        list.len()
+    );
 }
 
 fn table_for_boardmain() {
@@ -34,9 +39,10 @@ fn table_for_boardmain() {
 
 pub fn run(args: &ArgMatches) {
     let trace_type = args.get_one::<String>("tracer_type");
+    let is_showall = args.get_flag("showall");
     if trace_type.is_some() {
         let type_t = CCSTraceType::from(trace_type.unwrap().to_string());
-        tabel_for_boardtype(type_t);
+        table_for_boardtype(type_t, is_showall);
         return;
     }
     table_for_boardmain();

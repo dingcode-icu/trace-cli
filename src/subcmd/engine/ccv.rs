@@ -60,52 +60,9 @@ fn ccs_bug_filter(trace: &str) -> Result<CCSTraceType, Box<dyn Error>> {
     Ok(CCSTraceType::Unknown)
 }
 
-///获取单个类型的错误信息
-pub fn ccv_type_info() -> HashMap<CCSTraceType, Vec<String>> {
-    let buglist = get_buglist("*".to_string());
-    let mut ret: HashMap<CCSTraceType, Vec<String>> = HashMap::new();
-    ret.insert(CCSTraceType::Engine, Vec::new());
-    ret.insert(CCSTraceType::InnerJS, Vec::new());
-    ret.insert(CCSTraceType::BundleJS, Vec::new());
-    ret.insert(CCSTraceType::Unknown, Vec::new());
-
-    if let Ok(resp) = buglist {
-        if resp.code != 0 {
-            panic!("Net error:{:?}", resp.msg);
-        }
-        if let Some(bl) = resp.data {
-            for b in &bl {
-                let ret_ = ccs_bug_filter(b.as_str());
-                if let Ok(r) = ret_ {
-                    match r {
-                        CCSTraceType::Engine => {
-                            let l = ret.get_mut(&CCSTraceType::Engine).unwrap();
-                            l.insert(0, b.to_string());
-                        }
-                        CCSTraceType::InnerJS => {
-                            let l = ret.get_mut(&CCSTraceType::InnerJS).unwrap();
-                            l.insert(0, b.to_string());
-                        }
-                        CCSTraceType::BundleJS => {
-                            let l = ret.get_mut(&CCSTraceType::BundleJS).unwrap();
-                            l.insert(0, b.to_string());
-                        }
-                        CCSTraceType::Unknown => {
-                            let l = ret.get_mut(&CCSTraceType::Unknown).unwrap();
-                            l.insert(0, b.to_string());
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return ret;
-}
-
-///获取错误大盘信息
-pub fn ccv_board_info() -> (Vec<CCSTraceType>, Vec<u32>, Vec<f32>, Vec<u32>) {
+///获取服务器记录
+pub fn get_svr_record() -> (Vec<String>, HashMap<String, String>) {
     println!("[board]api to list(1/3)...");
-
     let mut buglist: Vec<String> = Vec::new();
     if let Ok(resp) = get_buglist("*".to_string()) {
         if resp.code != 0 {
@@ -122,7 +79,54 @@ pub fn ccv_board_info() -> (Vec<CCSTraceType>, Vec<u32>, Vec<f32>, Vec<u32>) {
         statlist = resp.data.unwrap_or_default();
     };
     println!("[board]done!");
+    return (buglist, statlist);
+}
 
+///获取单个类型的错误信息
+pub fn ccv_type_info(isall: bool) -> HashMap<CCSTraceType, Vec<String>> {
+    let (buglist, statlist) = get_svr_record();
+    let mut ret: HashMap<CCSTraceType, Vec<String>> = HashMap::new();
+    ret.insert(CCSTraceType::Engine, Vec::new());
+    ret.insert(CCSTraceType::InnerJS, Vec::new());
+    ret.insert(CCSTraceType::BundleJS, Vec::new());
+    ret.insert(CCSTraceType::Unknown, Vec::new());
+
+    for b in &buglist {
+        if !isall {
+            if statlist.contains_key(b) {
+                //todo : check stat detail
+                // let stat = statlist.get(b).unwrap_or(&"".to_string());
+                continue;
+            }
+        }
+        let ret_ = ccs_bug_filter(b.as_str());
+        if let Ok(r) = ret_ {
+            match r {
+                CCSTraceType::Engine => {
+                    let l = ret.get_mut(&CCSTraceType::Engine).unwrap();
+                    l.insert(0, b.to_string());
+                }
+                CCSTraceType::InnerJS => {
+                    let l = ret.get_mut(&CCSTraceType::InnerJS).unwrap();
+                    l.insert(0, b.to_string());
+                }
+                CCSTraceType::BundleJS => {
+                    let l = ret.get_mut(&CCSTraceType::BundleJS).unwrap();
+                    l.insert(0, b.to_string());
+                }
+                CCSTraceType::Unknown => {
+                    let l = ret.get_mut(&CCSTraceType::Unknown).unwrap();
+                    l.insert(0, b.to_string());
+                }
+            }
+        }
+    }
+    return ret;
+}
+
+///获取错误大盘信息
+pub fn ccv_board_info() -> (Vec<CCSTraceType>, Vec<u32>, Vec<f32>, Vec<u32>) {
+    let (buglist, statlist) = get_svr_record();
     let type_l = vec![
         CCSTraceType::Engine,
         CCSTraceType::InnerJS,

@@ -16,6 +16,7 @@ serde = { version = "1", features = ["derive"] }
 regex = "1.6.0"
 serde_json = "1.0"
 oauth2-cmd = {path ="oauth2-cmd"}
+chrono = "0.4.22"
 
 [profile.release]
 lto = true

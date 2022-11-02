@@ -1,5 +1,5 @@
 use crate::subcmd::board;
-use clap::{self, Arg, Command};
+use clap::{self, Arg, ArgAction, Command};
 use subcmd::{bug, fix, login};
 mod api;
 mod subcmd;
@@ -14,16 +14,28 @@ fn main() {
         .subcommand(
             Command::new("board")
                 .about("show tracer overview info")
-                .args([Arg::new("tracer_type")
-                    .short('t')
-                    .help("the tracer type to show single type details")]),
+                .args([
+                    Arg::new("tracer_type")
+                        .short('t')
+                        .help("the tracer type to show single type details"),
+                    Arg::new("showall")
+                        .short('a')
+                        .long("showall")
+                        .help("if show all bug trace include stat is fixed")
+                        .action(ArgAction::SetTrue),
+                ]),
         )
         .subcommand(
             Command::new("bug")
                 .about("show the fliterd detail of bug by input")
-                .args([Arg::new("tracer")
-                    .required(true)
-                    .help("the tracer key to show single bug details")]),
+                .args([
+                    Arg::new("tracer")
+                        .required(true)
+                        .help("the tracer key to show single bug details"),
+                    Arg::new("count")
+                        .required(false)
+                        .help("the max count to get bug cellinfo list.default is only 1"),
+                ]),
         )
         .subcommand(
             Command::new("fix")
