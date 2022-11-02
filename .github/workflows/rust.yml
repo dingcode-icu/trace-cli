@@ -10,6 +10,25 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  new_release:
+      runs-on: windows-latest
+      steps: 
+      -
+        uses: SebRollen/toml-action@v1.0.1
+        id: read_toml
+        with:
+          file: 'Cargo.toml'
+          field: 'package.version'
+      -
+        name: new_release 
+        uses: actions/create-release@latest
+        env: 
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          tag_name: ${{steps.read_toml.outputs.value}}
+          release_name: ${{steps.read_toml.outputs.value}}  
+          draft: false 
+          prerelease: false 
   build_win:
     runs-on: windows-latest
     steps:
@@ -23,6 +42,14 @@ jobs:
       with: 
         name: win_release 
         path: target/x86_64-pc-windows-msvc
+    - 
+      name: upload win assets 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+      with:
+        upload_url: ${{ steps.new_release.outputs.upload_url }} #
+        asset_path: target/x86_64-pc-windows-msvc/tracer-cli.exe
       
   build_mac:
     runs-on: macos-latest
@@ -43,20 +70,5 @@ jobs:
         name: win_release
         path: target/x86_64-pc-windows-msvc/tracer-cli.exe
     
-    -
-      uses: SebRollen/toml-action@v1.0.1
-      id: read_toml
-      with:
-        file: 'Cargo.toml'
-        field: 'package.version'
-    -
-      name: new_release 
-      uses: actions/create-release@latest
-      env: 
-        GITHUB_TOKEN: ${{ secrets.TOKEN }}
-      with:
-        tag_name: ${{steps.read_toml.outputs.value}}
-        release_name: ${{steps.read_toml.outputs.value}}  
-        draft: false 
-        prerelease: false 
+    
   
