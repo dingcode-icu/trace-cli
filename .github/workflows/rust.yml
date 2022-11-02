@@ -2,7 +2,7 @@ name: Rust
 
 on:
   workflow_dispatch:
-  pull_request:
+  push:
     branches: [ "main" ]
     paths: Cargo.toml
 
@@ -47,7 +47,7 @@ jobs:
         echo ======================
         echo ${{ needs }} 
         echo ${{ needs.new_release }} 
-        echo ${{ needs.new_release.steps }} 
+        echo ${{ needs.new_release.outputs }} 
         echo ${{ needs.new_release.steps.new_release}} 
         echo ${{ needs.new_release.steps.new_release.outputs}}
         echo ${{ needs.new_release.steps.new_release.outputs.upload_url }} 

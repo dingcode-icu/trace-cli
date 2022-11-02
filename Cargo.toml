@@ -1,5 +1,5 @@
 [package]
-name = "tracer_cli"
+name = "tracer-cli"
 version = "0.1.4"
 edition = "2021"
 
