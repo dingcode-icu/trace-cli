@@ -48,7 +48,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.TOKEN }}
       with:
         upload_url: ${{ needs.new_release.steps.new_release.outputs.upload_url }} 
-        asset_path: target/x86_64-pc-windows-msvc/tracer-cli.exe
+        asset_path: target/x86_64-pc-windows-msvc/release/tracer-cli.exe
       
   build_mac:
     runs-on: macos-latest
@@ -69,7 +69,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.TOKEN }}
       with:
         upload_url: ${{  needs.new_release.steps.new_release.outputs.upload_url }} #
-        asset_path: target/x86_64-apple-darwin/tracer-cli
+        asset_path: target/x86_64-apple-darwin/release/tracer-cli
         asset_name:  mac_intel64
     - 
       name: upload mac-arm assets 
@@ -78,5 +78,5 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.TOKEN }}
       with:
         upload_url: ${{  needs.new_release.steps.new_release.outputs.upload_url }} #
-        asset_path: target/aarch64-apple-darwin/tracer-cli
+        asset_path: target/aarch64-apple-darwin/release/tracer-cli
         asset_name: mac-arm
