@@ -41,11 +41,6 @@ jobs:
       name: Build
       run: cargo build --release --target=x86_64-pc-windows-msvc
     - 
-      uses: actions/upload-artifact@v3
-      with: 
-        name: win_release 
-        path: target/x86_64-pc-windows-msvc
-    - 
       name: upload win assets 
       uses: actions/upload-release-asset@v1
       env:
@@ -65,13 +60,21 @@ jobs:
         cargo build --release --target=x86_64-apple-darwin
         rustup target add aarch64-apple-darwin
         cargo build --release --target=aarch64-apple-darwin
-
     - 
-      name: download_winbinary
-      uses: actions/download-artifact@v3
-      with: 
-        name: win_release
-        path: target/x86_64-pc-windows-msvc/tracer-cli.exe
-    
-    
-  
+      name: upload mac64 assets 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+      with:
+        upload_url: ${{ steps.new_release.outputs.upload_url }} #
+        asset_path: target/x86_64-apple-darwin/tracer-cli
+        asset_name:  mac_intel64
+    - 
+      name: upload mac-arm assets 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+      with:
+        upload_url: ${{ steps.new_release.outputs.upload_url }} #
+        asset_path: target/aarch64-apple-darwin/tracer-cli
+        asset_name: mac-arm
