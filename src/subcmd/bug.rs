@@ -36,12 +36,17 @@ fn table_for_bug(trace: &str, topnum: u32) -> Vec<String> {
     // Formats the combined date and time with the specified format string.
     let timestamp_str = datetime.format("%Y%m%d %H:%M:%S").to_string();
     let stack_list = json_obj["game_ctx"]["stack"].as_array().unwrap();
+    // let hotver = json_obj[""]
     tb.add_row(row![count, timestamp_str]);
     println!("[bug]stack->");
     for s in stack_list {
         println!("{}", s);
     }
     tb.printstd();
+    println!(
+        "[bug] trace top 1 detail info of json:{}",
+        json_obj["common_param"]
+    );
     return bug_cells;
 }
 
