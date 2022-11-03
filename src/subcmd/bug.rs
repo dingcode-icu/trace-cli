@@ -48,7 +48,11 @@ fn table_for_bug(trace: &str, topnum: u32) -> Vec<String> {
 pub fn run(args: &ArgMatches) {
     //require
     let trace = args.get_one::<String>("tracer").unwrap();
-    let count = args.get_one::<String>("count").unwrap();
-    let max_c = count.parse::<u32>().unwrap();
+    let count = args.try_get_one::<String>("count").unwrap();
+    let mut max_c = 0;
+    if count.is_some() {
+        max_c = count.unwrap().parse::<u32>().unwrap();
+    }
+
     table_for_bug(trace, if max_c > 100 { 100 } else { max_c });
 }
