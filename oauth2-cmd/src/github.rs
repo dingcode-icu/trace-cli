@@ -91,7 +91,8 @@ impl GithubProcesser {
     pub fn get_httpagent() -> Agent {
         let ag = ureq::AgentBuilder::new()
         .timeout_connect(Duration::from_secs(5))
-        .timeout_read(Duration::from_secs(5));
+        .timeout_read(Duration::from_secs(5))
+        .build();
         ag
     }
 }
