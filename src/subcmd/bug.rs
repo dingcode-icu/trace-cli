@@ -23,8 +23,8 @@ fn table_for_bug(trace: &str, topnum: u32) -> Vec<String> {
     }
     let mut tb = Table::new();
     tb.add_row(row!["Count", "FirstTime"]);
-    let count = if topnum == 100 {
-        ">100".to_string()
+    let count = if bug_cells.len() > 99 {
+        ">=100".to_string()
     } else {
         let len = bug_cells.len().to_string();
         len
@@ -59,5 +59,5 @@ pub fn run(args: &ArgMatches) {
         max_c = count.unwrap().parse::<u32>().unwrap();
     }
 
-    table_for_bug(trace, if max_c > 100 { 100 } else { max_c });
+    table_for_bug(trace, if max_c > 99 { 99 } else { max_c });
 }

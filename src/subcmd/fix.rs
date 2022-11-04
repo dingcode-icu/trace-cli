@@ -20,9 +20,12 @@ pub fn run(args: &ArgMatches) {
             .expect("[fix]get system time faile!");
 
         let usr = get_usr_json();
+
+        let chk_email = usr.get("email").expect("[fix]At least, u must set an email address in your github's profile！");
+
         let stat = TraceState {
             is_fix: true,
-            resolve_email: usr.get("email").unwrap().as_str().unwrap().to_string(),
+            resolve_email: chk_email.as_str().unwrap().to_string(),
             resolve_time: cur_t.as_secs(),
         };
         let stat_str = stat.to_string();
