@@ -165,11 +165,3 @@ pub fn ccv_board_info() -> (Vec<CCSTraceType>, Vec<u32>, Vec<f32>, Vec<u32>) {
 
     return (type_l, typenum_l, typeper_l, typenumfixed_l);
 }
-
-#[test]
-fn test_enum() {
-    println!("enum value is {}", CCSTraceType::Unknown as u16);
-    println!("enum value is {}", CCSTraceType::Engine as u16);
-    println!("enum value is {}", CCSTraceType::InnerJS as u16);
-    println!("enum value is {}", CCSTraceType::BundleJS as u16);
-}
