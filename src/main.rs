@@ -18,11 +18,11 @@ fn main() {
                     Arg::new("tracer_type")
                         .short('t')
                         .help("the tracer type to show single type details"),
-                    Arg::new("showall")
-                        .short('a')
+                    Arg::new("list_type")
+                        .short('l')
                         .long("showall")
                         .help("if show all bug trace include stat is fixed")
-                        .action(ArgAction::SetTrue),
+                        .value_parser(["all", "unfixed", "fixed"]),
                 ]),
         )
         .subcommand(

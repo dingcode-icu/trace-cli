@@ -2,7 +2,10 @@ use std::{collections::HashMap, error::Error, fmt::Display};
 
 use regex::Regex;
 
-use crate::api::{get_buglist, get_bugstat_list};
+use crate::{
+    api::{get_buglist, get_bugstat_list},
+    subcmd::board::BugListType,
+};
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone, Copy)]
 #[repr(u8)]
@@ -83,7 +86,7 @@ pub fn get_svr_record() -> (Vec<String>, HashMap<String, String>) {
 }
 
 ///获取单个类型的错误信息
-pub fn ccv_type_info(isall: bool) -> HashMap<CCSTraceType, Vec<String>> {
+pub fn ccv_type_info(show_type: BugListType) -> HashMap<CCSTraceType, Vec<String>> {
     let (buglist, statlist) = get_svr_record();
     let mut ret: HashMap<CCSTraceType, Vec<String>> = HashMap::new();
     ret.insert(CCSTraceType::Engine, Vec::new());
@@ -92,10 +95,14 @@ pub fn ccv_type_info(isall: bool) -> HashMap<CCSTraceType, Vec<String>> {
     ret.insert(CCSTraceType::Unknown, Vec::new());
 
     for b in &buglist {
-        if !isall {
-            if statlist.contains_key(b) {
-                //todo : check stat detail
-                // let stat = statlist.get(b).unwrap_or(&"".to_string());
+        if show_type != BugListType::All {
+            //todo : check stat detail
+            // let stat = statlist.get(b).unwrap_or(&"".to_string());
+            let is_fixedbug = statlist.contains_key(b);
+            if show_type == BugListType::Fixed && !is_fixedbug {
+                continue;
+            }
+            if show_type == BugListType::UnFixed && is_fixedbug {
                 continue;
             }
         }
