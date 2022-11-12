@@ -1,8 +1,9 @@
 use std::time::Duration;
 
-use crate::APIProcesser;
 use ureq::{serde_json, Agent};
 use url::Url;
+
+use crate::iapi_processer::APIProcesser;
 
 const GIT_LOGINAPI: &str = "https://github.com/login/oauth/authorize";
 const GIT_ACCTOKEN: &str = "https://github.com/login/oauth/access_token";
@@ -90,9 +91,9 @@ impl GithubProcesser {
 
     pub fn get_httpagent() -> Agent {
         let ag = ureq::AgentBuilder::new()
-        .timeout_connect(Duration::from_secs(15))
-        .timeout_read(Duration::from_secs(15))
-        .build();
+            .timeout_connect(Duration::from_secs(15))
+            .timeout_read(Duration::from_secs(15))
+            .build();
         ag
     }
 }

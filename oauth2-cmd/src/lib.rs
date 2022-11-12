@@ -1,22 +1,24 @@
+use crate::iapi_processer::APIProcesser;
+use github::GithubProcesser;
+use notion::NotionProcesser;
 use std::{
     collections::HashMap,
     fmt::Display,
     fs, io,
     path::{Path, PathBuf},
-    str::FromStr,
     thread,
 };
-
-use github::GithubProcesser;
 use tiny_http::Server;
 use ureq::serde_json::{self, Value};
 
-/// Useful login library for command tool by oauth2 api
-/// oath2 API include but not limit to
+/// Packed useful oauth2 api for developer
+/// include but not limit to
 /// * github
+/// * notion
 /// * ...
-///
 mod github;
+mod iapi_processer;
+mod notion;
 
 pub enum API {
     Github,
@@ -37,7 +39,6 @@ impl Display for CacheType {
     }
 }
 
-///查看可用的port
 fn get_avaliable_port() -> u16 {
     std::net::TcpListener::bind("0.0.0.0:0")
         .unwrap()
@@ -46,7 +47,6 @@ fn get_avaliable_port() -> u16 {
         .port()
 }
 
-///获取缓存token
 fn get_global_cachedir() -> PathBuf {
     let ret = dirs::config_dir().unwrap().join(".oauth2-cmd");
     if !Path::new(&ret).is_dir() {
@@ -55,34 +55,22 @@ fn get_global_cachedir() -> PathBuf {
     ret
 }
 
-///获取token缓存
 fn chk_loc_token() -> String {
     let cache_dir = get_global_cachedir();
     let f_token = Path::new(&cache_dir).join(".token");
     fs::read_to_string(f_token).unwrap_or_default()
 }
 
-///获取usr缓存
-fn chk_loc_usrinfo() -> serde_json::Value {
-    let cache_dir = get_global_cachedir();
-    let f_usr = Path::new(&cache_dir).join(".usr");
-    let f_usr_str = fs::read_to_string(f_usr).unwrap_or("{}".to_string());
-    serde_json::Value::from_str(&f_usr_str).unwrap()
-}
-
-///缓存到cache文件夹
 fn record_loc_cache(ctype: CacheType, cont: String) -> Result<(), io::Error> {
     let cache_dir = get_global_cachedir();
     let f = match ctype {
         CacheType::Token => Path::new(&cache_dir).join(".token"),
         CacheType::Usr => Path::new(&cache_dir).join(".usr"),
     };
-
     fs::write(f, &cont)?;
     Ok(())
 }
 
-///获取query kv对
 fn query_to_tuple(query_str: &str) -> HashMap<String, String> {
     let query_l: Vec<&str> = query_str.split("&").collect();
     let mut ret: HashMap<String, String> = HashMap::new();
@@ -113,28 +101,9 @@ where
     ret
 }
 
-pub(crate) trait APIProcesser {
-    fn get_usr_info() -> Option<serde_json::Value> {
-        let usr = chk_loc_usrinfo();
-        Some(usr)
-    }
-
-    fn webbrowser_login(&self, red_uri: String);
-
-    fn api_login(&self, red_uri: String) -> Result<String, ureq::Error>;
-
-    fn api_gettoken(&self, code: String, red_uri: String) -> Result<String, ureq::Error>;
-
-    fn api_userinfo(&self, token: String) -> Result<serde_json::Value, ureq::Error>;
-}
-
-pub fn get_usr_json() -> serde_json::Value {
-    chk_loc_usrinfo()
-}
-
 pub fn login(api: Option<API>) -> Result<serde_json::Value, serde_json::Error> {
     if is_login() {
-        logout()
+        logout();
     };
     let api_type = api.unwrap_or(API::Github);
     let procer = match api_type {
@@ -180,14 +149,15 @@ pub fn login(api: Option<API>) -> Result<serde_json::Value, serde_json::Error> {
             panic!("[error]svr get req github api failed!");
         }
     }
-    let usr = chk_loc_usrinfo();
+    let usr = procer.get_usr_info().unwrap_or_default();
     Ok(usr)
 }
 
 pub fn logout() {
     let cache_dir = get_global_cachedir();
     if Path::new(&cache_dir).is_dir() {
-        let _ = fs::remove_dir(cache_dir);
+        let r = fs::remove_dir_all(cache_dir);
+        println!("logout ret is {:?}", r);
     }
     println!("Done!");
 }
