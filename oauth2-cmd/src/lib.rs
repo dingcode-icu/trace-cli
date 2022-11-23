@@ -1,5 +1,6 @@
 use crate::iapi_processer::APIProcesser;
 use github::GithubProcesser;
+use iapi_processer::chk_loc_usrinfo;
 use notion::NotionProcesser;
 use std::{
     collections::HashMap,
@@ -164,6 +165,10 @@ pub fn logout() {
 
 pub fn is_login() -> bool {
     chk_loc_token().len() > 0
+}
+
+pub fn get_usr_info() ->  serde_json::Value {
+    chk_loc_usrinfo()
 }
 
 #[test]

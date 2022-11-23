@@ -76,7 +76,7 @@ pub fn run(args: &ArgMatches) {
         buglist_type = BugListType::from(list_type.as_str());
     }
     if trace_type.is_some() {
-        let type_t = CCSTraceType::from(trace_type.unwrap().to_string());
+        let type_t = CCSTraceType::from(trace_type.unwrap().to_string().to_lowercase());
         table_for_boardtype(type_t, buglist_type);
         return;
     }

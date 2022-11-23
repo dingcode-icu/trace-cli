@@ -5,7 +5,7 @@ use ureq::serde_json;
 use crate::get_global_cachedir;
 
 ///获取usr缓存
-fn chk_loc_usrinfo() -> serde_json::Value {
+pub fn chk_loc_usrinfo() -> serde_json::Value {
     let cache_dir = get_global_cachedir();
     let f_usr = Path::new(&cache_dir).join(".usr");
     let f_usr_str = fs::read_to_string(f_usr).unwrap_or("{}".to_string());

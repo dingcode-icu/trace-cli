@@ -1,7 +1,7 @@
 use super::{get_trace_state, query_to_tuple};
 use crate::{api::post_modify_bugstat, subcmd::TraceState};
 use clap::ArgMatches;
-use oauth2_cmd::{get_usr_json, is_login};
+use oauth2_cmd::{is_login, get_usr_info};
 use std::time::SystemTime;
 
 pub fn run(args: &ArgMatches) {
@@ -19,7 +19,7 @@ pub fn run(args: &ArgMatches) {
             .duration_since(SystemTime::UNIX_EPOCH)
             .expect("[fix]get system time faile!");
 
-        let usr = get_usr_json();
+        let usr = get_usr_info();
 
         let chk_email = usr.get("email").expect("[fix]At least, u must set an email address in your github's profile！");
 
